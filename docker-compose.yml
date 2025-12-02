@@ -7,3 +7,5 @@ services:
     environment:
       - FLASK_ENV=development
     restart: unless-stopped
+    volumes:
+      - ./users.json:/app/users.json:ro
