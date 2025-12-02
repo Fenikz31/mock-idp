@@ -99,7 +99,7 @@ DEFAULT_CLIENTS: Dict[str, Dict] = {
     "test-questel-client": {
         "client_secret": "test-questel-secret",
         "redirect_uris": [
-            "http://localhost:8080/oidc/external/callback",
+            "https://loginqal.orbit.com/oidc/external/callback",
         ],
         "allowed_email_domains": ["questel.com"],
         "display_name": "Questel Mock IdP",
@@ -142,6 +142,16 @@ def get_client(client_id: str) -> Optional[Dict]:
 
 
 def validate_redirect_uri(client: Dict, redirect_uri: str) -> bool:
+    # In lenient mode (STRICT_VALIDATION=false), accept any valid URL format
+    if not STRICT_VALIDATION:
+        try:
+            parsed = urlparse(redirect_uri)
+            # Basic URL validation: must have scheme and netloc
+            if parsed.scheme and parsed.netloc:
+                app.logger.debug("validate_redirect_uri: redirect_uri '%s' accepted in lenient mode", redirect_uri)
+                return True
+        except Exception:
+            pass
     allowed = client.get("redirect_uris", [])
     if not allowed:
         return True
@@ -277,9 +287,27 @@ def pick_default_client() -> Optional[Tuple[str, Dict]]:
 def coerce_client(client_id: Optional[str]) -> Tuple[str, Dict]:
     if client_id and client_id in CLIENTS:
         return client_id, CLIENTS[client_id]
+    # In lenient mode (STRICT_VALIDATION=false), accept any client_id with default config
+    if client_id and not STRICT_VALIDATION:
+        # Create a default client config for the provided client_id
+        default_client = {
+            "client_secret": None,  # No secret required in lenient mode
+            "redirect_uris": [],
+            "allowed_email_domains": [],
+            "display_name": f"Mock Client ({client_id})",
+            "default_email": "user@example.com",
+            "default_first_name": "Quality",
+            "default_last_name": "Assurance",
+            "default_account_name": "Test Account",
+            "default_services": [],
+            "default_rights": [],
+            "scopes": ["openid", "profile", "email"],
+        }
+        app.logger.warning("Unknown client_id '%s', accepting with default config (lenient mode)", client_id)
+        return client_id, default_client
     default_entry = pick_default_client()
     if default_entry and not STRICT_VALIDATION:
-        app.logger.warning("Unknown client_id '%s', falling back to '%s'", client_id, default_entry[0])
+        app.logger.warning("Missing client_id, falling back to '%s'", default_entry[0])
         return default_entry
     if not client_id:
         abort(400, description="Missing client_id")
