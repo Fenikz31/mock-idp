@@ -1,0 +1,9 @@
+services:
+  e2e-oidc:
+    build: .
+    container_name: e2e-oidc
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped

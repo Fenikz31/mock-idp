@@ -1,0 +1,134 @@
+{
+  "info": {
+    "name": "E2E OIDC Dummy Provider",
+    "_postman_id": "e2e-oidc-collection-001",
+    "description": "Postman collection for testing the E2E OIDC Dummy Provider (Salesforce scratch org integration).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/selfTest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "selfTest"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Discovery Document",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/.well-known/openid-configuration",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ".well-known",
+            "openid-configuration"
+          ]
+        }
+      }
+    },
+    {
+      "name": "JWKS",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/jwks.json",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "jwks.json"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Token (dummy exchange)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "code",
+              "value": "dummy-code-{{testEmail}}",
+              "type": "text"
+            },
+            {
+              "key": "redirect_uri",
+              "value": "{{redirectUri}}",
+              "type": "text"
+            },
+            {
+              "key": "grant_type",
+              "value": "authorization_code",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/token",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "token"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Userinfo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer dummy-access-token-for-{{testEmail}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/userinfo",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "userinfo"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "testEmail",
+      "value": "user@questel.com"
+    },
+    {
+      "key": "redirectUri",
+      "value": "https://myorg.scratch.my.salesforce.com/callback"
+    }
+  ]
+}
