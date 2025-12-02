@@ -241,9 +241,8 @@ def build_user_claims(client: Dict, email: str, scopes: List[str]) -> Dict:
     return base
 
 
-def issue_id_token(client_id: str, email: str, scopes: List[str], nonce: Optional[str]):
+def issue_id_token(client_id: str, client: Dict, email: str, scopes: List[str], nonce: Optional[str]):
     now = int(time.time())
-    client = CLIENTS[client_id]
     claims = build_user_claims(client, email, scopes)
     payload = {
         "iss": ISSUER,
@@ -565,7 +564,7 @@ def token():
         "expires_at": datetime.utcnow() + timedelta(seconds=ACCESS_TOKEN_TTL_SECONDS),
     }
 
-    id_token = issue_id_token(client_id, email, scopes, nonce)
+    id_token = issue_id_token(client_id, client, email, scopes, nonce)
     user_claims = build_user_claims(client, email, scopes)
 
     return jsonify(
